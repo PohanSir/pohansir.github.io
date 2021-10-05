@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brics</title>
+</head>
+
+<body style="text-align: center;">
+  <script src="https://kaboomjs.com/lib/0.1.0/kaboom.js"></script>
+  <script type="module">
+
+    kaboom.global();
+
+    init({
+      width: 640,
+      height: 480,
+      //fullscreen: true,
+      crisp: true,
+    });
+
+    scene("Menu", () => {
+
+      add([
+        text("Bricks", 40),
+        pos(width() / 2, 30),
+        origin("center"),
+      ]);
+
+      add([
+        rect(130, 32),
+        pos(width() / 2, height() / 2),
+        origin("center"),
+        "button"
+      ]);
+
+      add([
+        text("Play", 32),
+        pos(width() / 2, height() / 2),
+        origin("center"),
+        color(0, 0, 0),
+      ]);
+
+      action("button", b => {
+        if (b.isHovered())
+          b.use(color(0.7, 0.7, 0.7));
+        else
+          b.use(color(1, 1, 1));
+
+        if (b.isClicked())
+          go("Game");
+      });
+
+    });
+
+    scene("Game", () => {
+
+      let pSpeed = 150;
+      const paddle = add([
+        rect(100, 10),
+        pos(width() / 2, height() - 20),
+        origin("center"),
+        color(0.44, 0.45, 0.52),
+        "paddle",
+        "bounce",
+      ]);
+
+      let speed = 100;
+      let dirMove = vec2((rand() > 0.5) ? 1 : -1, (rand() > 0.5) ? 1 : -1);
+      const ball = add([
+        rect(5, 5),
+        pos(width() / 2, height() - 35),
+        origin("center"),
+        "ball",
+      ]);
+
+      let count = 0;
+      for (let x = -8; x <= 8; x++) {
+        for (let y = 1; y < 10; y++) {
+          count++;
+          add([
+            rect(30, 10),
+            pos((width() / 2) + (35 * x), 15 * y),
+            origin("center"),
+            color(0.2 * y, y / 10, 0.5),
+            "brick",
+            "bounce",
+          ]);
+        }
+      }
+
+      ball.on("update", () => {
+        if (ball.pos.x - 2.5 < 0){
+          dirMove.x = dirMove.x * -1;
+          ball.pos.x = 2.5;
+        }
+
+        if (ball.pos.x + 2.5 > width()){
+          dirMove.x = dirMove.x * -1;
+          ball.pos.x = width()-2.5;
+        }
+
+        if (ball.pos.y - 2.5 < 0){
+          dirMove.y = dirMove.y * -1;
+          ball.pos.y = 2.5;
+        }
+
+        if (ball.pos.y + 2.5 > height())
+          go("End", true);
+
+
+        ball.move(dirMove.x * speed, dirMove.y * speed)
+      });
+
+      overlaps("ball", "bounce", (e, b) => {
+
+        let ballTL = vec2(e.pos.x-2.5, e.pos.y-2.5)
+        let ballTR = vec2(e.pos.x+2.5, e.pos.y-2.5)
+        let ballBL = vec2(e.pos.x-2.5, e.pos.y+2.5)
+        let ballBR = vec2(e.pos.x+2.5, e.pos.y+2.5)
+
+        let size = vec2(0, 0);
+        if(b.is("brick"))
+          size = vec2(15, 5);
+        else if(b.is("paddle"))
+          size = vec2(50, 5);
+
+        let objectTL = vec2(b.pos.x-size.x, b.pos.y-size.y)
+        let objectTR = vec2(b.pos.x+size.x, b.pos.y-size.y)
+        let objectBL = vec2(b.pos.x-size.x, b.pos.y+size.y)
+        let objectBR = vec2(b.pos.x+size.x, b.pos.y+size.y)
+
+        if (e.pos.y < b.pos.y) { // Višje
+
+          if (e.pos.x < b.pos.x) { // levo
+            console.log("t l");
+            if ((ballBR.x - objectTL.x) > (ballBR.y - objectTL.y))
+              dirMove.y = dirMove.y * -1;
+            else
+              dirMove.x = dirMove.x * -1;
+          }
+          else { // desno
+            console.log("t r");
+            if ((objectTR.x - ballBL.x) > (ballBL.y - objectTR.y))
+              dirMove.y = dirMove.y * -1;
+            else
+              dirMove.x = dirMove.x * -1;
+          }
+
+        }
+        else { // Nižje
+
+          if (e.pos.x < b.pos.x) { // levo
+            console.log("b l");
+            if ((ballTR.x - objectBL.x) > (objectBL.y  - ballTR.y))
+              dirMove.y = dirMove.y * -1;
+            else
+              dirMove.x = dirMove.x * -1;
+          }
+          else { // desno
+            console.log("b r");
+            if ((objectBR.x - ballTL.x) > (objectBR.y  - ballTL.y))
+              dirMove.y = dirMove.y * -1;
+            else
+              dirMove.x = dirMove.x * -1;
+          }
+        }
+
+        if (b.is("brick")) {
+          destroy(b);
+          count--;
+        }
+
+        if (count == 0)
+          go("End", false);
+
+      });
+
+      keyDown("left", () => {
+        if (paddle.pos.x - 50 > 0)
+          paddle.move(-1 * pSpeed, 0)
+      });
+
+      keyDown("right", () => {
+        if (paddle.pos.x + 50 < width())
+          paddle.move(1 * pSpeed, 0)
+      });
+
+    });
+
+    scene("End", state => {
+
+      if (state) {
+        add([
+          text("You Lose!!!", 40),
+          pos(width() / 2, 30),
+          origin("center"),
+        ]);
+      }
+      else {
+        add([
+          text("You Win!!!", 40),
+          pos(width() / 2, 30),
+          origin("center"),
+        ]);
+      }
+
+      add([
+        rect(130, 32),
+        pos(width() / 2, height() / 2),
+        origin("center"),
+        "button"
+      ]);
+
+      add([
+        text("Back", 32),
+        pos(width() / 2, height() / 2),
+        origin("center"),
+        color(0, 0, 0),
+      ]);
+
+      action("button", b => {
+        if (b.isHovered())
+          b.use(color(0.7, 0.7, 0.7));
+        else
+          b.use(color(1, 1, 1));
+
+        if (b.isClicked())
+          go("Menu");
+      });
+
+    });
+
+    start("Menu");
+
+  </script>
+
+</body>
+
+</html>

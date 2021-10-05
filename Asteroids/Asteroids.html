@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asteroids</title>
+</head>
+
+<body style="text-align: center;">
+  <script src="https://kaboomjs.com/lib/0.1.0/kaboom.js"></script>
+  <script type="module">
+
+    kaboom.global();
+
+    init({
+      width: 640,
+      height: 480,
+      //fullscreen: true,
+      crisp: true,
+    });
+
+    scene("Menu", () => {
+
+      add([
+        text("Asteroids", 40),
+        pos(width() / 2, 30),
+        origin("center"),
+      ]);
+
+      add([
+        rect(130, 32),
+        pos(width() / 2, height() / 2),
+        origin("center"),
+        "button"
+      ]);
+
+      add([
+        text("Play", 32),
+        pos(width() / 2, height() / 2),
+        origin("center"),
+        color(0, 0, 0),
+      ]);
+
+      action("button", b => {
+        if (b.isHovered())
+          b.use(color(0.7, 0.7, 0.7));
+        else
+          b.use(color(1, 1, 1));
+
+        if (b.isClicked())
+          go("Game");
+      });
+
+      keyPress("space", () => {
+        go("Game");
+      });
+
+    });
+
+    scene("Game", () => {
+
+      let center = vec2(width() / 2, height() / 2)
+      let front = vec2(0);
+      let right = vec2(0);
+      let left = vec2(0);
+      let ctr = 0;
+
+      let vel = vec2(0);
+      let acc = vec2(0);
+      let maxSpeed = 1;
+
+      let bullets = [];
+      let asteroids = [];
+
+      for (let i = 0; i < rand(3, 5); i++) {
+        asteroids.push({ stage: 3, p: vec2(rand(0, width()), rand(0, height())), vel: vec2(rand(-1, 1), rand(-1, 1)), points: [] });
+        for (let j = 1; j <= 6; j++) {
+          asteroids[i].points.push((360 / 6) * j);
+        }
+
+        asteroids[i].points.sort(function (a, b) {
+          return a - b;
+        });
+      }
+
+      console.log(asteroids);
+
+
+      render(() => {
+
+        vel.x += acc.x;
+        vel.y += acc.y;
+
+        if (vel.x < -maxSpeed)
+          vel.x = -maxSpeed;
+
+        if (vel.x > maxSpeed)
+          vel.x = maxSpeed;
+
+        if (vel.y < -maxSpeed)
+          vel.y = -maxSpeed;
+
+        if (vel.y > maxSpeed)
+          vel.y = maxSpeed;
+
+        center.x += vel.x;
+        center.y += vel.y;
+
+        if (center.x < 0)
+          center.x = width();
+
+        if (center.x > width())
+          center.x = 0;
+
+        if (center.y < 0)
+          center.y = height();
+
+        if (center.y > height())
+          center.y = 0;
+
+        front.x = 20 * Math.cos(ctr * Math.PI / 180.0) + center.x;
+        front.y = 20 * Math.sin(ctr * Math.PI / 180.0) + center.y;
+
+        right.x = 20 * Math.cos((ctr + 140) * Math.PI / 180.0) + center.x;
+        right.y = 20 * Math.sin((ctr + 140) * Math.PI / 180.0) + center.y;
+
+        left.x = 20 * Math.cos((ctr - 140) * Math.PI / 180.0) + center.x;
+        left.y = 20 * Math.sin((ctr - 140) * Math.PI / 180.0) + center.y;
+
+        /*drawLine(center, front, {
+          width: 2,
+          color: rgba(0, 1, 0, 1),
+          z: 0.5,
+        });*/
+
+        drawLine(center, right, {
+          width: 2,
+          color: rgba(0, 1, 0, 1),
+          z: 0.5,
+        });
+
+        drawLine(center, left, {
+          width: 2,
+          color: rgba(0, 1, 0, 1),
+          z: 0.5,
+        });
+
+        drawLine(front, right, {
+          width: 2,
+          color: rgba(0, 1, 0, 1),
+          z: 0.5,
+        });
+
+        drawLine(front, left, {
+          width: 2,
+          color: rgba(0, 1, 0, 1),
+          z: 0.5,
+        });
+
+        bullets.forEach((element, index) => {
+          element.life--;
+
+          if (element.life <= 0) {
+            bullets.splice(index, 1);
+          }
+
+          element.p.x += element.dir.x;
+          element.p.y += element.dir.y;
+
+          if (element.p.x < 0)
+            element.p.x = width();
+
+          if (element.p.x > width())
+            element.p.x = 0;
+
+          if (element.p.y < 0)
+            element.p.y = height();
+
+          if (element.p.y > height())
+            element.p.y = 0;
+
+          drawLine(element.p, vec2(element.p.x + element.dir.x, element.p.y + element.dir.y), {
+            width: 2,
+            color: rgba(1, 1, 1, 1),
+            z: 0.5,
+          });
+        });
+
+        let make = [];
+
+        asteroids.forEach((element, index) => {
+          let size = 15;
+
+          element.p.x += element.vel.x;
+          element.p.y += element.vel.y;
+
+          if (element.p.x < 0)
+            element.p.x = width();
+
+          if (element.p.x > width())
+            element.p.x = 0;
+
+          if (element.p.y < 0)
+            element.p.y = height();
+
+          if (element.p.y > height())
+            element.p.y = 0;
+
+          for (let i = 0; i < element.points.length; i++) {
+
+            let p1 = vec2(0)
+            p1.x = element.stage * size * Math.cos(element.points[i] * Math.PI / 180.0) + element.p.x;
+            p1.y = element.stage * size * Math.sin(element.points[i] * Math.PI / 180.0) + element.p.y;
+
+            let p2 = vec2(0)
+            p2.x = element.stage * size * Math.cos(element.points[(i + 1 != element.points.length) ? i + 1 : 0] * Math.PI / 180.0) + element.p.x;
+            p2.y = element.stage * size * Math.sin(element.points[(i + 1 != element.points.length) ? i + 1 : 0] * Math.PI / 180.0) + element.p.y;
+
+            drawLine(p1, p2, {
+              width: 2,
+              color: rgba(1, 1, 1, 1),
+              z: 0.5,
+            });
+          }
+
+          bullets.forEach((e, i) => {
+            if ((e.p.x - element.p.x) * (e.p.x - element.p.x) + (e.p.y - element.p.y) * (e.p.y - element.p.y) < (element.stage * size) * (element.stage * size)) {
+
+              switch (element.stage) {
+                case 1:
+                  const bS = new Audio("./sound/bangSmall.wav");
+                  bS.play();
+                  break;
+
+                case 2:
+                  const bM = new Audio("./sound/bangMedium.wav");
+                  bM.play();
+                  break;
+
+                case 3:
+                  const bL = new Audio("./sound/bangLarge.wav");
+                  bL.play();
+                  break;
+              }
+
+
+              bullets.splice(i, 1);
+              asteroids.splice(index, 1);
+
+              if (element.stage - 1 > 0) {
+                for (let i = 0; i < 2; i++) {
+                  make.push({ stage: element.stage - 1, p: vec2(element.p.x, element.p.y), vel: vec2(rand(-1, 1), rand(-1, 1)), points: [] });
+                  for (let j = 1; j <= 6; j++) {
+                    make[i].points.push((360 / 6) * j);
+                  }
+
+                  make[i].points.sort(function (a, b) {
+                    return a - b;
+                  });
+                }
+              }
+            }
+          });
+
+          if ((center.x - element.p.x) * (center.x - element.p.x) + (center.y - element.p.y) * (center.y - element.p.y) < (element.stage * size) * (element.stage * size)) {
+            go("End", true);
+          }
+
+
+        });
+
+        make.forEach(element => {
+          asteroids.push(element);
+        });
+
+        if (asteroids.length == 0) {
+          go("End", false);
+        }
+
+      });
+
+      keyDown("left", () => {
+        ctr -= 1;
+      });
+
+      keyDown("right", () => {
+        ctr += 1;
+      });
+
+      const audio = new Audio("./sound/thrust.wav");
+      keyDown("up", () => {
+        acc.x = (front.x - center.x) * 0.001;
+        acc.y = (front.y - center.y) * 0.001;
+        //audio.playbackRate = 2;
+        //audio.loop = true;
+        audio.play();
+      });
+
+      keyRelease("up", () => {
+        acc.x = 0;
+        acc.y = 0;
+        audio.pause();
+      });
+
+      keyPress("space", () => {
+        //console.log("pew");
+        bullets.push({ p: vec2(front.x, front.y), dir: vec2((front.x - center.x) * 0.25, (front.y - center.y) * 0.25), life: 100 });
+        const audio = new Audio("./sound/fire.wav");
+        audio.play();
+      });
+
+    });
+
+    scene("End", state => {
+
+      if (state) {
+        add([
+          text("You Lose!!!", 40),
+          pos(width() / 2, 30),
+          origin("center"),
+        ]);
+      }
+      else {
+        add([
+          text("You Win!!!", 40),
+          pos(width() / 2, 30),
+          origin("center"),
+        ]);
+      }
+
+      add([
+        rect(130, 32),
+        pos(width() / 2, height() / 2),
+        origin("center"),
+        "button"
+      ]);
+
+      add([
+        text("Back", 32),
+        pos(width() / 2, height() / 2),
+        origin("center"),
+        color(0, 0, 0),
+      ]);
+
+      action("button", b => {
+        if (b.isHovered())
+          b.use(color(0.7, 0.7, 0.7));
+        else
+          b.use(color(1, 1, 1));
+
+        if (b.isClicked())
+          go("Menu");
+      });
+
+      keyPress("space", () => {
+        go("Menu");
+      });
+
+    });
+
+    start("Menu");
+
+  </script>
+
+</body>
+
+</html>
