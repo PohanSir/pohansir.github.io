@@ -64,7 +64,7 @@
         sprite("Sub"),
         pos(width() / 2, height() / 2),
         origin("center"),
-        scale(0.5),
+        scale(0.1),
       ]);
 
       keyDown("left", () => {
@@ -74,7 +74,7 @@
 
       keyDown("right", () => {
         if (player.pos.x + 50 < width())
-          paplayerddle.move(1 * pSpeed, 0)
+          player.move(1 * pSpeed, 0)
       });
 
     });
