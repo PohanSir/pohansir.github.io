@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sub Game</title>
+</head>
+
+<body style="text-align: center;">
+  <script src="https://kaboomjs.com/lib/0.1.0/kaboom.js"></script>
+  <script type="module">
+
+    kaboom.global();
+
+    init({
+      width: 640,
+      height: 480,
+      //fullscreen: true,
+      crisp: true,
+    });
+
+    scene("Menu", () => {
+
+      add([
+        text("Sub Game", 40),
+        pos(width() / 2, 30),
+        origin("center"),
+      ]);
+
+      add([
+        rect(130, 32),
+        pos(width() / 2, height() / 2),
+        origin("center"),
+        "button"
+      ]);
+
+      add([
+        text("Play", 32),
+        pos(width() / 2, height() / 2),
+        origin("center"),
+        color(0, 0, 0),
+      ]);
+
+      action("button", b => {
+        if (b.isHovered())
+          b.use(color(0.7, 0.7, 0.7));
+        else
+          b.use(color(1, 1, 1));
+
+        if (b.isClicked())
+          go("Game");
+      });
+
+    });
+
+    scene("Game", () => {
+      loadSprite("Sub", "Sub.jpg");
+
+      let pSpeed = 150;
+      const player = add([
+        sprite("Sub"),
+        pos(width() / 2, height() / 2),
+        origin("center"),
+      ]);
+
+      keyDown("left", () => {
+        if (player.pos.x - 50 > 0)
+        player.move(-1 * pSpeed, 0)
+      });
+
+      keyDown("right", () => {
+        if (player.pos.x + 50 < width())
+          paplayerddle.move(1 * pSpeed, 0)
+      });
+
+    });
+
+    scene("End", state => {
+
+      if (state) {
+        add([
+          text("You Lose!!!", 40),
+          pos(width() / 2, 30),
+          origin("center"),
+        ]);
+      }
+      else {
+        add([
+          text("You Win!!!", 40),
+          pos(width() / 2, 30),
+          origin("center"),
+        ]);
+      }
+
+      add([
+        rect(130, 32),
+        pos(width() / 2, height() / 2),
+        origin("center"),
+        "button"
+      ]);
+
+      add([
+        text("Back", 32),
+        pos(width() / 2, height() / 2),
+        origin("center"),
+        color(0, 0, 0),
+      ]);
+
+      action("button", b => {
+        if (b.isHovered())
+          b.use(color(0.7, 0.7, 0.7));
+        else
+          b.use(color(1, 1, 1));
+
+        if (b.isClicked())
+          go("Menu");
+      });
+
+    });
+
+    start("Menu");
+
+  </script>
+
+</body>
+
+</html>
