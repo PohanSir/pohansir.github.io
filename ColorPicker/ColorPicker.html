@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test1</title>
+    <style>
+        :root {
+            --red: #FF0000;
+            --orange: #FF7F00;
+            --yellow: #FFFF00;
+            --green: #00FF00;
+            --blue: #0000FF;
+            --violet: #9400D3;
+        }
+        
+        div{
+            margin: 15px;
+        }
+
+        table { 
+            border-spacing: 0;
+            border-collapse: collapse;
+        }
+
+        th { 
+            padding: .5em;
+        }
+        
+        td { 
+            border: 1px solid;
+            width: 2em;
+            height: 2em;
+            background-color: white;
+        }
+
+        td:hover{
+            filter: brightness(85%);
+        }
+
+        .red{
+            
+            background-color: var(--red);
+        }
+
+        .orange{
+            
+            background-color: var(--orange);
+        }
+
+        .yellow{
+            
+            background-color: var(--yellow);
+        }
+
+        .green{
+            
+            background-color: var(--green);
+        }
+
+        .blue{
+            
+            background-color: var(--blue);
+        }
+
+        .violet{
+            
+            background-color: var(--violet);
+        }
+
+        .colorpicker{
+            filter: brightness(50%);
+        }
+
+        .selected{
+            filter: brightness(100%);
+        }
+
+        .colorpicker:hover{
+            filter: brightness(100%);
+        }
+
+    </style>
+</head>
+<body>
+    <div>
+        <table >
+            <tr>
+                <td class="red colorpicker"></td>
+                <td class="orange colorpicker"></td>
+                <td class="yellow colorpicker"></td>
+                <td class="green colorpicker"></td>
+                <td class="blue colorpicker"></td>
+                <td class="violet colorpicker"></td>
+            </tr>
+        </table>
+    </div>
+    <div>
+        <table >
+            <tr>
+                <td class="paint"></td>
+                <td class="paint"></td>
+                <td class="paint"></td>
+                <td class="paint"></td>
+            </tr>
+            <tr>
+                <td class="paint"></td>
+                <td class="paint"></td>
+                <td class="paint"></td>
+                <td class="paint"></td>
+            </tr>
+            <tr>
+                <td class="paint"></td>
+                <td class="paint"></td>
+                <td class="paint"></td>
+                <td class="paint"></td>
+            </tr>
+            <tr>
+                <td class="paint"></td>
+                <td class="paint"></td>
+                <td class="paint"></td>
+                <td class="paint"></td>
+            </tr>
+        </table>
+    </div>
+    <div>
+        <button onclick="SavePic(pic);removeColor();">Shrani</button>
+        <button onclick="equalsPic();">Preveri</button>
+        <button onclick="removeColor();">Počisti</button>
+    </div>
+<script>
+    // Color picker
+    const elements = document.getElementsByClassName("colorpicker");
+    var curentColor;
+
+    var setCurentColor = function(){
+        for (var i = 0; i < elements.length; i++) {
+            elements[i].classList.remove("selected");
+        }
+    }
+
+    var myFunction = function() {
+        setCurentColor();
+        this.classList.add("selected");
+        curentColor = this.classList[0];
+    };
+
+    for (var i = 0; i < elements.length; i++) {
+        elements[i].addEventListener('click', myFunction, false);
+    }
+    // Color picker
+
+    // Painter
+    const paintElements = document.getElementsByClassName("paint");
+
+    var paint = function() {
+        if(this.classList.length > 1)
+            this.classList.remove(this.classList[1])
+
+        if(curentColor != undefined)
+            this.classList.add(curentColor);
+    };
+
+    for (var i = 0; i < paintElements.length; i++) {
+        paintElements[i].addEventListener('click', paint, false);
+    }
+    // Painter
+
+    // SavePic
+    var pic = new Array();
+
+    var SavePic = function(arr){
+        for (var i = 0; i < paintElements.length; i++) {
+            arr.push(paintElements[i].classList[1]);
+        }
+        console.log(pic);
+    }
+
+    var removeColor = function(){
+        for (var i = 0; i < paintElements.length; i++) {
+            if(paintElements[i].classList.length > 1)
+                paintElements[i].classList.remove(paintElements[i].classList[1])
+        }
+    }
+
+    var equalsPic = function(){
+        var temp = new Array();
+        SavePic(temp);
+        console.log(temp);
+        var ujema=true;
+
+        for (var i = 0; i < paintElements.length; i++) {
+            
+            if(temp[i] != pic[i]){
+                ujema=false;
+                break;
+            }
+        }
+
+        if(ujema)
+            alert("Se ujema!");
+        else
+            alert("Se ne ujema!");
+    }
+    // SavePic
+
+</script>
+</body>
+</html>
