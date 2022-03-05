@@ -168,10 +168,13 @@
     // Painter
 
     // SavePic
-    var pic;
+    var pic= new Array();
 
     var SavePic = function(arr){
-        arr = new Array();
+        if(arr.length > 0){
+            arr.length = 0
+        }
+        
         for (var i = 0; i < paintElements.length; i++) {
             arr.push(paintElements[i].classList[1]);
         }
