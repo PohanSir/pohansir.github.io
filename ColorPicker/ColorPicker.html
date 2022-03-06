@@ -97,31 +97,8 @@
         </table>
     </div>
     <div>
-        <table >
-            <tr>
-                <td class="paint"></td>
-                <td class="paint"></td>
-                <td class="paint"></td>
-                <td class="paint"></td>
-            </tr>
-            <tr>
-                <td class="paint"></td>
-                <td class="paint"></td>
-                <td class="paint"></td>
-                <td class="paint"></td>
-            </tr>
-            <tr>
-                <td class="paint"></td>
-                <td class="paint"></td>
-                <td class="paint"></td>
-                <td class="paint"></td>
-            </tr>
-            <tr>
-                <td class="paint"></td>
-                <td class="paint"></td>
-                <td class="paint"></td>
-                <td class="paint"></td>
-            </tr>
+        <input type="number" id="quantity" name="quantity" min="4" max="10" value="4" />
+        <table id="fill">
         </table>
     </div>
     <div>
@@ -130,6 +107,34 @@
         <button onclick="removeColor();">Počisti</button>
     </div>
 <script>
+    // Gen Grid
+    const table = document.getElementById("fill");
+
+    var genGrid = function(num){
+        for (var i = 0; i < num; i++) {
+            var row = table.insertRow(i);
+            for (var j = 0; j < num; j++) {
+                var cell = row.insertCell(j);
+                cell.classList.add("paint");
+            }
+        }
+    }
+
+    const numSelect = document.getElementById("quantity");
+
+    genGrid(numSelect.value);
+
+    numSelect.addEventListener('change', (event) => {
+        table.innerHTML = "";
+        genGrid(event.target.value);
+        paintElements = document.getElementsByClassName("paint");
+        for (var i = 0; i < paintElements.length; i++) {
+        paintElements[i].addEventListener('click', paint, false);
+    }
+    });
+
+    // Gen Grid
+
     // Color picker
     const elements = document.getElementsByClassName("colorpicker");
     var curentColor;
@@ -152,7 +157,7 @@
     // Color picker
 
     // Painter
-    const paintElements = document.getElementsByClassName("paint");
+    var paintElements = document.getElementsByClassName("paint");
 
     var paint = function() {
         if(this.classList.length > 1)
@@ -168,16 +173,17 @@
     // Painter
 
     // SavePic
-    var pic= new Array();
+    var pic = new Array();
 
     var SavePic = function(arr){
         if(arr.length > 0){
             arr.length = 0
         }
-        
+
         for (var i = 0; i < paintElements.length; i++) {
             arr.push(paintElements[i].classList[1]);
         }
+
         console.log(pic);
     }
 
